@@ -13,14 +13,6 @@
 #define writeIntervalLoops 500 
 #define movementMultiplier  2
 
-struct {
-  uint8_t buttons;
-  int8_t x;
-  int8_t y;
-  int8_t wheel;   /* Not yet implemented */
-} mouseReport;
-
-uint8_t nullReport[4] = { 0, 0, 0, 0 };
 
 // =================================================================================
 // Type definitions
@@ -31,13 +23,18 @@ typedef struct
   uint8_t index      = 0;
 } ENCODER_;
 
-
 typedef struct
 {
   uint8_t current = 0; 
   uint8_t old     = 0; 
 } PINRECORD_; 
 
+struct {
+  uint8_t buttons;
+  int8_t x;
+  int8_t y;
+  int8_t wheel;   /* Not yet implemented */
+} mouseReport;
 
 // =================================================================================
 // Constant definition
@@ -173,5 +170,4 @@ void WriteMouseDataToDebug(){
     Serial.print(mouseReport.y);
     Serial.print(" Button: "); 
     Serial.println(mouseReport.buttons); 
-
 }
