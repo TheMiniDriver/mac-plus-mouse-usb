@@ -19,7 +19,6 @@ const int x1Pin = 4;
 const int x2Pin = 5; 
 
 
-
 // =================================================================================
 // Type definition
 // =================================================================================
@@ -82,8 +81,8 @@ void loop()
       ISR_HANDLER_Y();
     }
 
-    ReadButtonInput(); 
-
+    UpdateOldXYValues(); 
+    
     if (writeDelayCounter > 1000){
       // Serial.print("X: "); 
       // Serial.print(mouseReport.x); 
@@ -91,28 +90,20 @@ void loop()
       // Serial.println(mouseReport.y);
       mouseReport.x = xAxis.coordinate;
       mouseReport.y = yAxis.coordinate;
+      mouseReport.buttons = ReadButtonInput(); 
       Serial.write((uint8_t *)&mouseReport, 4);
       writeDelayCounter = 0; 
       xAxis.coordinate = 0;
       yAxis.coordinate = 0;
     }
-    
-    UpdateOldXYValues(); 
     writeDelayCounter ++; 
-   
 }
 
 
 void ReadButtonInput(){
     // The mouse button is active low (ie. when pressed it is GND and will read as 0. So we need to invert it, as the USB driver is High for press. 
     uint8_t buttonState = digitalRead(buttonPin);
-    mouseReport.buttons = !buttonState; 
-    
-//    if (buttonState == LOW) {
-//      mouseReport.buttons = 1;
-//    } else {
-//      mouseReport.buttons = 0;
-//    }
+    return !buttonState;  
 }
 
 void Read_XYInputs()
