@@ -1,0 +1,120 @@
+/* ================================================================================
+   Found on Website : https://geekhack.org/index.php?topic=74340.0 
+   Author  : GuilleAcoustic
+   Date    : 2015-05-22
+   Revision: V1.0
+   Purpose : Opto-mechanical trackball firmware
+   --------------------------------------------------------------------------------
+   Wiring informations: Sparkfun Pro micro (Atmega32u4)
+   --------------------------------------------------------------------------------
+     - Red    : Gnd                          |   Pin: Gnd
+     - Orange : Vcc (+5V)                    |   Pin: Vcc
+     - Yellow : X axis encoder / channel A   |   Pin: PD3 - (INT0)
+     - Green  : X axis encoder / channel B   |   Pin: PD2 - (INT1)
+     - Blue   : Y axis encoder / channel A   |   Pin: PD0 - (INT2)
+     - Violet : Y axis encoder / channel B   |   Pin: PD1 - (INT3)
+     - Grey   : Switch 1                     |   Pin: PB3
+     - White  : Switch 2                     |   Pin: PB2
+     - Black  : Switch 3                     |   Pin: PB1
+   
+   --------------------------------------------------------------------------------
+   Modified for use with Apple M0100 mouse
+   By Johan Berglund, 2015-08-10
+
+   Changes in code:
+   - Internal pullup set for pin 14 (B3)
+   - State check for right and middle buttons commented out
+
+   Connection to DB9:
+   
+   DB9     Pro Micro
+    1       GND
+    2       VCC
+    3       GND
+    4       D0      (pin 3)
+    5       D1      (pin 2)
+    6       -       (not connected)
+    7       B3      (pin 14)
+    8       D3      (pin TXO)
+    9       D2      (pin RXI)
+   
+   ================================================================================ */
+
+// =================================================================================
+// Type definition
+// =================================================================================
+typedef struct
+{
+  int8_t  coordinate = 0;
+  uint8_t index      = 0;
+} ENCODER_;
+
+// =================================================================================
+// Constant definition
+// =================================================================================
+const int8_t lookupTable[] = {0, 1, -1, 0, -1, 0, 0, 1, 1, 0, 0, -1, 0, -1,  1,  0};
+
+// =================================================================================
+// Volatile variables
+// =================================================================================
+volatile ENCODER_ xAxis;
+volatile ENCODER_ yAxis;
+
+// =================================================================================
+// Setup function
+// =================================================================================
+void setup()
+{
+
+  // Set pull-up for mouse switch on M0100
+  pinMode(14, INPUT_PULLUP);
+  
+  // Attach interruption to encoders channels
+  attachInterrupt(0, ISR_HANDLER_X, CHANGE);
+  attachInterrupt(1, ISR_HANDLER_X, CHANGE);
+  attachInterrupt(2, ISR_HANDLER_Y, CHANGE);
+  attachInterrupt(3, ISR_HANDLER_Y, CHANGE);
+  
+  // Start the mouse function
+  Mouse.begin();
+}
+
+// =================================================================================
+// Main program loop
+// =================================================================================
+void loop()
+{
+  // Update mouse coordinates
+  if (xAxis.coordinate != 0 || yAxis.coordinate != 0)
+  {
+    Mouse.move(xAxis.coordinate, yAxis.coordinate);
+    xAxis.coordinate = 0;
+    yAxis.coordinate = 0;
+  }
+
+  // Update buttons state
+  !(PINB & 0b1000) ? Mouse.press(MOUSE_LEFT)   : Mouse.release(MOUSE_LEFT);
+  // !(PINB & 0b0100) ? Mouse.press(MOUSE_RIGHT)  : Mouse.release(MOUSE_RIGHT);
+  // !(PINB & 0b0010) ? Mouse.press(MOUSE_MIDDLE) : Mouse.release(MOUSE_MIDDLE);
+
+
+  // Wait a little before next update
+  delay(10);
+}
+
+// =================================================================================
+// Interrupt handlers
+// =================================================================================
+void ISR_HANDLER_X()
+{
+  // Build the LUT index from previous and new data
+  xAxis.index       = (xAxis.index << 2) | ((PIND & 0b0011) >> 0);
+  xAxis.coordinate += lookupTable[xAxis.index & 0b1111];
+}
+
+void ISR_HANDLER_Y()
+{
+  // Build the LUT index from previous and new data
+  yAxis.index       = (yAxis.index << 2) | ((PIND & 0b1100) >> 2);
+  yAxis.coordinate += lookupTable[yAxis.index & 0b1111];
+}
