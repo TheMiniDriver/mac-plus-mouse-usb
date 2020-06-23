@@ -10,6 +10,8 @@
 #define y2Pin  3 
 #define x1Pin  4 
 #define x2Pin  5 
+#define writeIntervalLoops 500 
+#define movementMultiplier  2
 
 struct {
   uint8_t buttons;
@@ -78,24 +80,25 @@ void loop()
     // read the state of the pushbutton value:
     ReadXYInputs(); 
     
-    if (CheckForInputChange(&x1, &x2)){
+    if (CheckForInputChange(x1, x2)){
         ISR_HANDLER_X();
     }
 
-    if (CheckForInputChange(&y1, &y2)){
+    if (CheckForInputChange(y1, y2)){
       ISR_HANDLER_Y();
     }
 
     UpdateOldXYValues(); 
-    
-    if (writeDelayCounter > 1000){
-      // Want to avoid writing too much as it takes a while and we lose too many encoder increments.
-      mouseReport.x = xAxis.coordinate;
-      mouseReport.y = yAxis.coordinate;
+
+    // Want to avoid writing too much as it takes a while and we lose too many encoder increments.
+    if (writeDelayCounter > writeIntervalLoops){
+      
+      mouseReport.x = xAxis.coordinate * movementMultiplier;
+      mouseReport.y = yAxis.coordinate * movementMultiplier;
       mouseReport.buttons = ReadButtonInput(); 
       
-      //Serial.write((uint8_t *)&mouseReport, 4);
-      WriteMouseDataToDebug(); 
+      Serial.write((uint8_t *)&mouseReport, 4);
+      //WriteMouseDataToDebug(); 
      
       writeDelayCounter = 0; 
       xAxis.coordinate = 0;
@@ -130,17 +133,9 @@ void UpdateOldXYValues(){
   y2.old = y2.current;
 }
 
-bool CheckForInputChange(PINRECORD_ *rec1, PINRECORD_ *rec2){
-  return ((rec1->old != rec1->current) || (rec2->old != rec2->current)); 
+bool CheckForInputChange(PINRECORD_ &rec1, PINRECORD_ &rec2){
+  return ((rec1.old != rec1.current) || (rec2.old != rec2.current)); 
 }
-
-//bool Check_for_Input_Change_X(){
-//  return ((x1.old != x1.current) || (x2.old != x2.current)); 
-//}
-//
-//bool Check_for_Input_Change_Y(){
-//  return ((y1.old != y1.current) || (y2.old != y2.current)); 
-//}
 
 // =================================================================================
 // Encoder Lookups 
