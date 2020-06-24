@@ -39,7 +39,7 @@
 // This determines how often to write to the USB port. 
 #define writeIntervalLoops 500 
 
-// This determines how much to Amplify each increment, at the expense of accuracy. 
+// This determines how much to amplify each increment, at the expense of accuracy. 
 // Without it, it takes a whole desk to move across a modern hi-res display. 
 #define movementMultiplier  2 
 
@@ -94,7 +94,7 @@ void loop();
 
 void setup()
 {
-  // initialize the pushbutton pin as an input with a pullup (mouse button down shorts to ground):
+  // initialize the mouse button pin as an input with a pullup (mouse button 'click' shorts to ground,i.e active low):
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(x1Pin, INPUT); 
   pinMode(x2Pin, INPUT);
@@ -110,10 +110,10 @@ void loop()
 {
     ReadXYInputs(); 
     if (CheckForInputChange(x1, x2)){
-        ISR_HANDLER_X();
+        DecodeXAxis();
     }
     if (CheckForInputChange(y1, y2)){
-      ISR_HANDLER_Y();
+      DecodeYAxis();
     }
     UpdateOldXYValues(); 
 
@@ -136,7 +136,7 @@ void loop()
 
 
 // =================================================================================
-// Mouse input reading
+// Mouse raw input reading
 // =================================================================================
 
 uint8_t ReadButtonInput(){
@@ -165,27 +165,27 @@ bool CheckForInputChange(PINRECORD_ &rec1, PINRECORD_ &rec2){
 }
 
 // =================================================================================
-// Encoder Lookups 
+// Decoding rotary encoders 
 // This was originally on interrupt handlers, but on the UNO there are not enough
 // interrupts (only 2, and we need 4). 
 // =================================================================================
-void ISR_HANDLER_X()
+void DecodeXAxis()
 {
   // Build the LUT index from previous and new data
   uint8_t xInput = x2.current << 1; 
   xInput += x1.current;  
   
-  xAxis.index       = (xAxis.index << 2) | (xInput);
+  xAxis.index = (xAxis.index << 2) | (xInput);
   xAxis.coordinate += lookupTable[xAxis.index & 0b1111];
 }
 
-void ISR_HANDLER_Y()
+void DecodeYAxis()
 {
   // Build the LUT index from previous and new data
   uint8_t yInput = y2.current << 1; 
   yInput += y1.current;
   
-  yAxis.index       = (yAxis.index << 2) | (yInput);
+  yAxis.index = (yAxis.index << 2) | (yInput);
   yAxis.coordinate += lookupTable[yAxis.index & 0b1111];
 }
 
