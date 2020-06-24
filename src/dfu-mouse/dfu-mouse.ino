@@ -1,59 +1,47 @@
 /* ================================================================================
-   Authors  : GuilleAcoustic, Johan Berglund, Darran Hunt, Anh Nguyen, Bradley Van Aardt(theminidriver)
-   Date    : 2015-05-22
-   Revision: V1.0
-   Purpose : Opto-mechanical trackball firmware
-   --------------------------------------------------------------------------------
-   Wiring informations: Sparkfun Pro micro (Atmega32u4)
-   --------------------------------------------------------------------------------
-     - Red    : Gnd                          |   Pin: Gnd
-     - Orange : Vcc (+5V)                    |   Pin: Vcc
-     - Yellow : X axis encoder / channel A   |   Pin: PD3 - (INT0)
-     - Green  : X axis encoder / channel B   |   Pin: PD2 - (INT1)
-     - Blue   : Y axis encoder / channel A   |   Pin: PD0 - (INT2)
-     - Violet : Y axis encoder / channel B   |   Pin: PD1 - (INT3)
-     - Grey   : Switch 1                     |   Pin: PB3
-     - White  : Switch 2                     |   Pin: PB2
-     - Black  : Switch 3                     |   Pin: PB1
+  Apple Macintosh Plus M0100 Mouse USB converter using Arduino UNO
+    by Bradley Van Aardt (https://github.com/TheMiniDriver/mac-plus-mouse-usb)
+    23 June 2020
+  
+   Adpated from  https://geekhack.org/index.php?topic=74340.0  by GuilleAcoustic and Johan Berglund. 
+   Using code from https://anhnguyen.me/2014/01/turn-arduino-uno-r3-into-a-mouse/ by Darran Hunt, Anh Nguyen
+
+   I adapted the GuilleAcoustic and Johan Berglund code to run on an Arduino UNO, instead of the Pro Micro. This was purely because I only had an UNO. 
+   This meant that another method of USB communication needed to be found, as the UNO does not support the libary calls used in the orignal code. 
+   I found a solution by Darren Hunt in a good tutorial by Anh Nguyen, and updated the code with that. 
+   Note that it requires the Uno firmware to be changed while running the application. 
+
+   The other significant change was to move to a polling method for the rotary encoders from the mouse, as the UNO only has 2 interrupt pins, where 4 are required for both axis.
+   I thought this would severely affect the behaviour of the mouse, but it works quite well.   
    
-   --------------------------------------------------------------------------------
-   Modified for use with Apple M0100 mouse
-   By Johan Berglund, 2015-08-10
-
-   Changes in code:
-   - Internal pullup set for pin 14 (B3)
-   - State check for right and middle buttons commented out
-
-   Connection to DB9:
+  
+   Connection to M0100 DB9: (note mappings can be changed in the #define section below)
    
    DB9     Arduino UNO
     1       GND
     2       VCC
     3       GND
-    4       D0      (pin 3)
-    5       D1      (pin 2)
+    4       PIN4     
+    5       PIN5      
     6       -       (not connected)
-    7       B3      (pin 14)
-    8       D3      (pin TXO)
-    9       D2      (pin RXI)
+    7       PIN7     
+    8       PIN8      
+    9       PIN9      
    
    ================================================================================ */
+    
+#define x1Pin  4  // DB9 pin 4
+#define x2Pin  5  // DB9 pin 5
+#define y1Pin  9  // DB9 pin 9
+#define y2Pin  8  // DB9 pin8
+#define buttonPin  7  // DB9 pin 7
 
-
-/* Arduino USB Mouse HID demo */
-
-/* Author: Darran Hunt
-   Release into the public domain.
-*/
-
-
-#define buttonPin  6     
-#define y1Pin  2 
-#define y2Pin  3 
-#define x1Pin  4 
-#define x2Pin  5 
+// This determines how often to write to the USB port. 
 #define writeIntervalLoops 500 
-#define movementMultiplier  2
+
+// This determines how much to Amplify each increment, at the expense of accuracy. 
+// Without it, it takes a whole desk to move across a modern hi-res display. 
+#define movementMultiplier  2 
 
 
 // =================================================================================
@@ -96,6 +84,10 @@ PINRECORD_ y1;
 PINRECORD_ y2;
 
 int writeDelayCounter = 0; 
+
+// =================================================================================
+// Main program
+// =================================================================================
 
 void setup();
 void loop();
