@@ -43,6 +43,6 @@ The procedure to use the code is then as follows:
 1. Upload the sketch in the `src` folder in the repo
 2. Power cycle the Arduino UNO
 3. Reset the 16u2 chip by shorting the reset pins 
-4. Upload the [Arduino-mouse-0.1.hex](https://github.com/TheMiniDriver/mac-plus-mouse-usb/blob/master/arduino-firmware/Arduino-mouse-0.1.hex file using your DFU programmer. If you are using macOS, you can use the shell script [prog-mode.sh](https://github.com/TheMiniDriver/mac-plus-mouse-usb/blob/master/arduino-firmware/prog-mode.sh) to upload the code
+4. Upload the [Arduino-mouse-0.1.hex](https://github.com/TheMiniDriver/mac-plus-mouse-usb/blob/master/arduino-firmware/Arduino-mouse-0.1.hex file using your DFU programmer. If you are using macOS, you can use the shell script [hid-mode.sh](https://github.com/TheMiniDriver/mac-plus-mouse-usb/blob/master/arduino-firmware/hid-mode.sh) to upload the new firmware.
 5. Power cycle the Arduino UNO again. The sketch should be running, and the Arduino will appear as a mouse to your system, and translate the movement from the M0100 mouse. 
 
